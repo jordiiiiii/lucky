@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ premi.nom }}{% endblock %}
+
+{% block body %}
+    <h1>{{ premi.nom }}</h1>
+    <p>{{ premi.valor }}</p>
+    <td>{{ premi.data |date('Y/M/d') }}</td>
+    <hr>
+    <a href="/">Go Back</a>
+{% endblock %}

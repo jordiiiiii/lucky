@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lucky Premis{% endblock %}
+
+{% block body %}
+    {% if premis %}
+        <table id="premis" class="table table-striped">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Valor</th>
+                <th>Data</th>
+                <th>Accions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for premi in premis %}
+                <tr>
+                    <td>{{ premi.nom }}</td>
+                    <td>{{ premi.valor }}</td>
+                    <td>{{ premi.data |date('Y/M/d') }}</td>
+                    <td>
+                        <a href="/premi/{{ premi.id }}" class="btn btn-dark">Show</a>
+                        <a href="/premi/edit/{{ premi.id }}" class="btn btn-light">Edit</a>
+                        <a href="#" class="btn btn-danger delete-premi" data-id="{{ premi.id }}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No premis per ensenyar</p>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="/js/main.js"></script>
+{% endblock %}

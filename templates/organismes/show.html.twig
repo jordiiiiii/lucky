@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ organisme.nomorg }}{% endblock %}
+
+{% block body %}
+    <h1>{{ organisme.nomorg }}</h1>
+    <p>{{ organisme.nif }}</p>
+    <hr>
+    <a href="/organismes">Go Back</a>
+{% endblock %}

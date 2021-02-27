@@ -10,6 +10,7 @@
                 <th>Nom</th>
                 <th>Valor</th>
                 <th>Data</th>
+                <th>Nom Organisme</th>
                 <th>Accions</th>
             </tr>
             </thead>
@@ -19,6 +20,7 @@
                     <td>{{ premi.nom }}</td>
                     <td>{{ premi.valor }}</td>
                     <td>{{ premi.data |date('Y/M/d') }}</td>
+                    <td>{{ premi.getOrganisme().getNomorg() }}</td>
                     <td>
                         <a href="/premi/{{ premi.id }}" class="btn btn-dark">Show</a>
                         <a href="/premi/edit/{{ premi.id }}" class="btn btn-light">Edit</a>

@@ -32,6 +32,12 @@ class Premi
      */
     private $data;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Organisme::class, inversedBy="premis")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $organisme;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -69,6 +75,18 @@ class Premi
     public function setData(\DateTimeInterface $data): self
     {
         $this->data = $data;
+
+        return $this;
+    }
+
+    public function getOrganisme(): ?Organisme
+    {
+        return $this->organisme;
+    }
+
+    public function setOrganisme(?Organisme $organisme): self
+    {
+        $this->organisme = $organisme;
 
         return $this;
     }

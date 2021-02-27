@@ -1,8 +1,9 @@
 <?php
-// src/Controller/LuckyController.php
+// src/Controller/PremiController.php
 namespace App\Controller;
 
 use App\Entity\Premi;
+use App\Entity\Organisme;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,14 +11,18 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\OrganismeRepository;
+use App\Repository\PremiRepository;
 
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-class LuckyController extends AbstractController
+class PremiController extends AbstractController
 {
     /**
       * @Route("/lucky/number")
@@ -38,9 +43,17 @@ class LuckyController extends AbstractController
      * @Method({"GET"})
      */
     public function index() {
-
-        $premis= $this->getDoctrine()->getRepository(Premi::class)->findAll();
+        $premis = $this->getDoctrine()->getRepository(Premi::class)->findAll();
         return $this->render('premis/index.html.twig', array('premis' => $premis));
+    }
+
+    /**
+     * @Route("/organismes", name="organisme_list")
+     * @Method({"GET"})
+     */
+    public function indexOrganisme() {
+        $organismes = $this->getDoctrine()->getRepository(Organisme::class)->findAll();
+        return $this->render('organismes/index.html.twig', array('organismes' => $organismes));
     }
 
     /**
@@ -49,6 +62,8 @@ class LuckyController extends AbstractController
      */
     public function new(Request $request) {
         $premi = new Premi();
+
+        $organismes = $this->getDoctrine()->getRepository(Organisme::class)->findAll();
 
         $form = $this->createFormBuilder($premi)
             ->add('nom', TextType::class, array('attr' => array('class' => 'form-control')))
@@ -60,6 +75,13 @@ class LuckyController extends AbstractController
                 'required' => true,
                 'attr' => array('class' => 'form-control')
             ))
+//            ->add('organisme', ChoiceType::class, ['choices'=> $organismes] , array(
+//                'required' => true,
+//                'attr' => array('class' => 'form-control')
+//            ))
+            ->add('organisme', EntityType::class, [
+                'class' => Organisme::class,
+                'choice_label' => 'nomorg'])
             ->add('save', SubmitType::class, array(
                 'label' => 'Create',
                 'attr' => array('class' => 'btn btn-primary mt-3')
@@ -79,6 +101,42 @@ class LuckyController extends AbstractController
         }
 
         return $this->render('premis/new.html.twig', array(
+            'form' => $form->createView()
+        ));
+    }
+
+    /**
+     * @Route("/organisme/nou", name="new_organisme")
+     * Method({"GET", "POST"})
+     */
+    public function newOrg(Request $request) {
+        $organisme = new Organisme();
+
+        $form = $this->createFormBuilder($organisme)
+            ->add('nomorg', TextType::class, array('attr' => array('class' => 'form-control')))
+            ->add('nif', TextType::class, array(
+                'required' => true,
+                'attr' => array('class' => 'form-control')
+            ))
+            ->add('save', SubmitType::class, array(
+                'label' => 'Create',
+                'attr' => array('class' => 'btn btn-primary mt-3')
+            ))
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            $organisme = $form->getData();
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($organisme);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('organisme_list');
+        }
+
+        return $this->render('organismes/new.html.twig', array(
             'form' => $form->createView()
         ));
     }
@@ -133,18 +191,29 @@ class LuckyController extends AbstractController
             ->getRepository(Premi::class)
             ->find($id);
 
-//        if (!$premi) {
-//            throw $this->createNotFoundException(
-//                'No premi found for id '.$id
-//            );
-//        }
-
         return $this->render('premis/show.html.twig', array('premi' => $premi));
-//        return new Response('Check out this great premi: '.$premi->getNom());
+    }
 
-        // or render a template
-        // in the template, print things with {{ premi.name }}
-        // return $this->render('premi/show.html.twig', ['premi' => $premi]);
+    /**
+     * @Route("/organisme/{id}", name="organisme_show")
+     * @Method({"GET"})
+     */
+    public function showOrg(int $id): Response
+//    public function showOrg(int $id, PremiRepository $premiRepository): Response
+    {
+        $organisme = $this->getDoctrine()
+            ->getRepository(Organisme::class)
+            ->find($id);
+
+//        $premi = $premiRepository->findBy(['organisme' => $organisme]);
+//        dump($premi);die;
+        $premis = $organisme->getPremis();
+        foreach($premis as $premi){
+            dump($premi);
+        }
+        die;
+
+        return $this->render('organismes/show.html.twig', array('organisme' => $organisme));
     }
 
     /**
@@ -162,7 +231,20 @@ class LuckyController extends AbstractController
         $response->send();
     }
 
+    /**
+     * @Route("/organisme/delete/{id}")
+     * @Method({"DELETE"})
+     */
+    public function deleteOrg(Request $request, $id) {
+        $organisme = $this->getDoctrine()->getRepository(Organisme::class)->find($id);
 
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($organisme);
+        $entityManager->flush();
+
+        $response = new Response();
+        $response->send();
+    }
 
     /**
      * @Route("/premi/edit/{id}")
@@ -174,15 +256,37 @@ class LuckyController extends AbstractController
 
         if (!$premi) {
             throw $this->createNotFoundException(
-                'No product found for id '.$id
+                'No premi found for id '.$id
             );
         }
 
-        $premi->setNom('New product name!');
+        $premi->setNom('New premi name!');
         $entityManager->flush();
 
         return $this->redirectToRoute('premi_show', [
             'id' => $premi->getId()
+        ]);
+    }
+
+    /**
+     * @Route("/organisme/edit/{id}")
+     */
+    public function updateOrg(int $id): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $organisme = $entityManager->getRepository(Organisme::class)->find($id);
+
+        if (!$organisme) {
+            throw $this->createNotFoundException(
+                'No Organisme found for id '.$id
+            );
+        }
+
+        $organisme->setNomorg('New Organisme name!');
+        $entityManager->flush();
+
+        return $this->redirectToRoute('organisme_show', [
+            'id' => $organisme->getId()
         ]);
     }
 

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lucky Organismes{% endblock %}
+
+{% block body %}
+    {% if organismes %}
+        <table id="organismes" class="table table-striped">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>NIF</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for organisme in organismes %}
+                <tr>
+                    <td>{{ organisme.nomorg }}</td>
+                    <td>{{ organisme.nif }}</td>
+                    <td>
+                        <a href="/organisme/{{ organisme.id }}" class="btn btn-dark">Show</a>
+                        <a href="/organisme/edit/{{ organisme.id }}" class="btn btn-light">Edit</a>
+                        <a href="#" class="btn btn-danger delete-premi" data-id="{{ organisme.id }}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No organismes per ensenyar</p>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="/js/main.js"></script>
+{% endblock %}
